@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/input-otp";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
+import { verifyOtpSchema } from "@/lib/schemas";
 
 export default function VerifyOtpPage() {
   const [otp, setOtp] = useState("");
@@ -37,10 +38,15 @@ export default function VerifyOtpPage() {
   if (!email) return null;
 
   function verifyOtp() {
+    const result = verifyOtpSchema.safeParse({ email, otp });
+    if (!result.success) {
+      toast.error(result.error.errors[0].message);
+      return;
+    }
     startOtpTransition(async () => {
       await authClient.signIn.emailOtp({
-        email: email as string,
-        otp,
+        email: result.data.email,
+        otp: result.data.otp,
         fetchOptions: {
           onSuccess: () => {
             toast.success("Email verified successfully");
@@ -90,7 +96,7 @@ export default function VerifyOtpPage() {
         <Button
           className="w-full cursor-pointer"
           onClick={verifyOtp}
-          disabled={isOtpPending || otp.length !== 6}
+          disabled={isOtpPending || otp.length < 6}
         >
           {isOtpPending ? (
             <>

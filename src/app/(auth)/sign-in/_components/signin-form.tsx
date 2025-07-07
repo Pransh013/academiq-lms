@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
+import { signinSchema } from "@/lib/schemas";
 
 export function SigninForm() {
   const router = useRouter();
@@ -42,6 +43,11 @@ export function SigninForm() {
   }
 
   function signinWithEmail() {
+    const result = signinSchema.safeParse({ email });
+    if (!result.success) {
+      toast.error(result.error.errors[0].message);
+      return;
+    }
     startEmailTransition(async () => {
       await authClient.emailOtp.sendVerificationOtp({
         email,
@@ -103,7 +109,6 @@ export function SigninForm() {
               placeholder="name@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
               autoComplete="email"
             />
           </div>
