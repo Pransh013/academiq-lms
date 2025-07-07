@@ -12,7 +12,7 @@ export default function AuthLayout({
     <main className="relative flex flex-col items-center justify-center gap-6 min-h-svh">
       <Button asChild className="absolute top-4 left-4" variant="outline">
         <Link href="/">
-          <ArrowLeft /> Back to home
+          <ArrowLeft /> Back to Home
         </Link>
       </Button>
       <div className="flex justify-center items-center gap-3">
@@ -25,10 +25,9 @@ export default function AuthLayout({
       </div>
       <div className="w-full max-w-sm space-y-2">
         {children}
-        <p className="text-xs text-center max-w-5/6 mx-auto text-muted-foreground">
-          By clicking continue, you agree to our{" "}
-          <span className="font-medium underline">Terms of Service</span> and{" "}
-          <span className="font-medium underline">Privacy Policy.</span>
+        <p className="text-xs text-center max-w-5/6 mx-auto text-muted-foreground *:[span]:font-medium *:[span]:cursor-pointer *:[span]:hover:text-primary *:[span]:underline *:[span]:underline-offset-4">
+          By clicking continue, you agree to our <span>Terms of Service</span>{" "}
+          and <span>Privacy Policy.</span>
         </p>
       </div>
     </main>

@@ -1,7 +1,8 @@
 "use client";
 
-import { useTransition } from "react";
-import { GithubIcon, Loader, Mail } from "lucide-react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { GithubIcon, Loader2, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -18,10 +19,13 @@ import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
 
 export function SigninForm() {
-  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const [isGitHubPending, startGitHubTransition] = useTransition();
+  const [isEmailPending, startEmailTransition] = useTransition();
+  const [email, setEmail] = useState("");
 
-  async function signinWithGitHub() {
-    startTransition(async () => {
+  function signinWithGitHub() {
+    startGitHubTransition(async () => {
       await authClient.signIn.social({
         provider: "github",
         callbackURL: "/",
@@ -29,13 +33,32 @@ export function SigninForm() {
           onSuccess: () => {
             toast.success("Signed in successfully");
           },
-          onError: (error) => {
-            toast.error(error.error.message);
+          onError: ({ error }) => {
+            toast.error(error.message);
           },
         },
       });
     });
   }
+
+  function signinWithEmail() {
+    startEmailTransition(async () => {
+      await authClient.emailOtp.sendVerificationOtp({
+        email,
+        type: "sign-in",
+        fetchOptions: {
+          onSuccess: () => {
+            toast.success("OTP sent successfully");
+            router.push(`/verify-otp?email=${email}`);
+          },
+          onError: ({ error }) => {
+            toast.error(error.message);
+          },
+        },
+      });
+    });
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -49,11 +72,11 @@ export function SigninForm() {
           variant="outline"
           className="w-full cursor-pointer"
           onClick={signinWithGitHub}
-          disabled={isPending}
+          disabled={isGitHubPending || isEmailPending}
         >
-          {isPending ? (
+          {isGitHubPending ? (
             <>
-              <Loader className="size-4 animate-spin" />
+              <Loader2 className="size-4 animate-spin" />
               Signing in...
             </>
           ) : (
@@ -74,11 +97,32 @@ export function SigninForm() {
         <div className="space-y-3">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="name@example.com" />
+            <Input
+              id="email"
+              type="email"
+              placeholder="name@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+            />
           </div>
-          <Button className="w-full cursor-pointer">
-            <Mail className="mr-2" />
-            Continue with Email
+          <Button
+            className="w-full cursor-pointer"
+            onClick={signinWithEmail}
+            disabled={isEmailPending || isGitHubPending}
+          >
+            {isEmailPending ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Signing in...
+              </>
+            ) : (
+              <>
+                <Mail className="mr-2" />
+                Continue with Email
+              </>
+            )}
           </Button>
         </div>
       </CardContent>
