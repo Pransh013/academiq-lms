@@ -65,7 +65,7 @@ export default function VerifyOtpPage() {
       <CardHeader className="text-center">
         <CardTitle className="text-2xl">Please enter the OTP</CardTitle>
         <CardDescription>
-          We've sent a verification code to{" "}
+          We&apos;ve sent a verification code to{" "}
           <span className="font-medium">{email}</span>
         </CardDescription>
       </CardHeader>
