@@ -5,9 +5,8 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 
-export default function Home() {
+export default function HomePage() {
   const router = useRouter();
   const { data: session } = authClient.useSession();
 
@@ -22,9 +21,8 @@ export default function Home() {
     });
   }
   return (
-    <div>
+    <main className="w-full h-screen max-w-7xl px-4 md:px-8 border">
       <Button>Hello World</Button>
-      <ThemeToggle/>
       {session ? (
         <p>
           {session.user.name}
@@ -39,6 +37,6 @@ export default function Home() {
           Sign-in
         </Button>
       )}
-    </div>
+    </main>
   );
 }
