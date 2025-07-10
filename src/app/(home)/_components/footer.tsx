@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Github, Mail, Twitter } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { NavbarLogo } from "@/components/ui/resizable-navbar";
+import { NavbarLogo } from "@/components/ui/navbar-logo";
 
 const socialLinks = [
   {

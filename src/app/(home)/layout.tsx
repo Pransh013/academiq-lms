@@ -1,15 +1,17 @@
 import { Footer } from "./_components/footer";
 import { NavbarMain } from "./_components/navbar";
 
-export default async function HomeLayout({
+export default function HomeLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div>
       <NavbarMain />
-      <div className="flex justify-center">{children}</div>
+      <main className="container mx-auto px-4 md:px-8 border min-h-screen">
+        {children}
+      </main>
       <Footer />
     </div>
   );

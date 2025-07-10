@@ -22,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${raleway.variable} antialiased`}>
+      <body className={`${raleway.variable} custom-scrollbar antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

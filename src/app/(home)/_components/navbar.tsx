@@ -8,16 +8,17 @@ import {
   NavBody,
   NavItems,
   MobileNav,
-  NavbarLogo,
   MobileNavHeader,
   MobileNavToggle,
   MobileNavMenu,
-} from "@/components/ui/resizable-navbar";
+} from "./resizable-navbar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { NavbarLogo } from "@/components/ui/navbar-logo";
+import { UserDropdown } from "./user-dropdown";
 
 export function NavbarMain() {
   const { data: session, isPending } = authClient.useSession();
@@ -39,10 +40,11 @@ export function NavbarMain() {
             {isPending ? (
               <Skeleton className="size-9 rounded-full" />
             ) : session?.session ? (
-              <Avatar>
-                <AvatarImage src={session.user.image ?? undefined} />
-                <AvatarFallback>{session.user.name[0] ?? "U"}</AvatarFallback>
-              </Avatar>
+              <UserDropdown
+                email={session.user.email}
+                name={session.user.name}
+                image={session.user.image ?? undefined}
+              />
             ) : (
               <Button
                 variant="ghost"
