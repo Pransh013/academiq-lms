@@ -14,12 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useSignout } from "@/lib/hooks/useSignout";
-
-type UserDropdownProps = {
-  email: string;
-  name: string;
-  image?: string;
-};
+import { UserDropdownProps } from "@/lib/types";
 
 export function UserDropdown({ email, name, image }: UserDropdownProps) {
   const { signOut } = useSignout();
@@ -59,7 +54,7 @@ export function UserDropdown({ email, name, image }: UserDropdownProps) {
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/dashboard">
+            <Link href="/admin">
               <LayoutDashboard
                 size={16}
                 className="opacity-60"

@@ -125,6 +125,8 @@
   --sidebar-primary-foreground: oklch(0.9881 0 0);
   --sidebar-accent: oklch(0.168 0.002 106.6177);
   --sidebar-accent-foreground: oklch(0.8074 0.0142 93.0137);
+  --sidebar-border: hsl(240 3.7% 15.9%);
+  --sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
 
 @layer base {

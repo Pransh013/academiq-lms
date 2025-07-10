@@ -1,22 +1,24 @@
-import { cn } from "@/lib/utils";
-import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
+
+import { cn } from "@/lib/utils";
 
 export const NavbarLogo = ({ className }: { className?: string }) => {
   return (
     <Link
       href="/"
-      className="relative z-20 mr-4 flex items-center space-x-2 py-1 text-sm font-normal text-black"
+      className={cn(
+        "relative z-20 mr-4 flex items-center space-x-2 py-1 text-2xl font-bold text-foreground",
+        className
+      )}
     >
       <Image
         src="https://assets.aceternity.com/logo-dark.png"
         alt="logo"
-        width={36}
-        height={36}
+        width={34}
+        height={34}
       />
-      <span className={cn("font-bold text-2xl text-foreground", className)}>
-        Academiq
-      </span>
+      <span>Academiq</span>
     </Link>
   );
 };
