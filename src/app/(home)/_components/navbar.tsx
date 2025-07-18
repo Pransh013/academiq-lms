@@ -41,9 +41,9 @@ export function NavbarMain() {
               <Skeleton className="size-9 rounded-full" />
             ) : session?.session ? (
               <UserDropdown
-                email={session.user.email}
-                name={session.user.name}
-                image={session.user.image ?? undefined}
+                name={session?.user.name ?? ""}
+                email={session?.user.email ?? ""}
+                image={session?.user.image ?? undefined}
               />
             ) : (
               <Button
@@ -60,7 +60,7 @@ export function NavbarMain() {
               asChild
               disabled={isPending}
             >
-              <Link href={session?.session ? "/dashboard" : "/sign-in"}>
+              <Link href={session?.session ? "/admin" : "/sign-in"}>
                 Get Started
               </Link>
             </Button>

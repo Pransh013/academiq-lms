@@ -81,7 +81,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              className="data-[slot=sidebar-menu-button]:!p-1 text-2xl"
+              className="data-[slot=sidebar-menu-button]:!p-1 text-2xl hover:bg-transparent"
             >
               <NavbarLogo />
             </SidebarMenuButton>

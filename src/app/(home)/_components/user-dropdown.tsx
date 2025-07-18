@@ -15,21 +15,27 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useSignout } from "@/lib/hooks/useSignout";
 import { UserDropdownProps } from "@/lib/types";
+import { getUserDisplayMeta } from "@/lib/utils";
 
 export function UserDropdown({ email, name, image }: UserDropdownProps) {
   const { signOut } = useSignout();
+  const { displayName, avatarImage, avatarFallback } = getUserDisplayMeta({
+    name,
+    email,
+    image,
+  });
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Avatar className="hover:-translate-y-0.5 transition duration-200">
-          <AvatarImage src={image} alt="Profile image" />
-          <AvatarFallback>{name[0].toUpperCase() ?? "U"}</AvatarFallback>
+          <AvatarImage src={avatarImage} alt={displayName} />
+          <AvatarFallback>{avatarFallback}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="max-w-64" align="end">
         <DropdownMenuLabel className="flex min-w-0 flex-col">
           <span className="text-foreground truncate text-sm font-medium">
-            {name}
+            {displayName}
           </span>
           <span className="text-muted-foreground truncate text-xs font-normal">
             {email}
@@ -66,8 +72,12 @@ export function UserDropdown({ email, name, image }: UserDropdownProps) {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={signOut}>
-          <LogOutIcon size={16} className="opacity-60" aria-hidden="true" />
-          <span>Logout</span>
+          <LogOutIcon
+            size={16}
+            className="opacity-80 text-destructive"
+            aria-hidden="true"
+          />
+          <span className="text-destructive">Logout</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

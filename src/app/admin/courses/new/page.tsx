@@ -38,6 +38,7 @@ import {
   courseStatus,
   newCourseSchema,
 } from "@/lib/schemas";
+import { TextEditor } from "@/components/text-editor/editor";
 
 export default function NewCoursePage() {
   const form = useForm<NewCourseType>({
@@ -145,7 +146,10 @@ export default function NewCoursePage() {
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Textarea {...field} className="min-h-28 resize-none" />
+                      <TextEditor
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
