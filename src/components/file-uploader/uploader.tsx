@@ -1,29 +1,120 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
 import { type FileRejection, useDropzone } from "react-dropzone";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { Card, CardContent } from "../ui/card";
-import { Upload, AlertCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useCallback, useState, useEffect } from "react";
+import { Upload, AlertCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
+import axios from "axios";
+
+import { Card, CardContent } from "../ui/card";
+import { Progress } from "../ui/progress";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
+import { cn } from "@/lib/utils";
+
+interface FileState {
+  objectUrl: string | null;
+  uploading: boolean;
+  progress: number;
+  errorMessage: string | null;
+  isDeleting: boolean;
+}
 
 interface UploaderProps {
-  value?: File | null;
-  onChange?: (file: File | null) => void;
+  value?: string;
+  onChange: (fileKey: string) => void;
+}
+
+interface PresignedUrlResponse {
+  presignedUrl: string;
+  fileKey: string;
 }
 
 export function Uploader({ value, onChange }: UploaderProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [error, setError] = useState<string>("");
+  const [fileState, setFileState] = useState<FileState>({
+    objectUrl: null,
+    uploading: false,
+    progress: 0,
+    errorMessage: null,
+    isDeleting: false,
+  });
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    if (acceptedFiles.length) {
-      console.log(acceptedFiles[0]);
-    }
-  }, []);
+  const uploadFile = useCallback(
+    async (file: File) => {
+      setFileState((prev) => ({
+        ...prev,
+        uploading: true,
+        progress: 0,
+        errorMessage: null,
+      }));
+
+      try {
+        const { data } = await axios.post<PresignedUrlResponse>(
+          "/api/s3/upload",
+          {
+            fileName: file.name,
+            contentType: file.type,
+            size: file.size,
+            isImage: true,
+          }
+        );
+
+        const { presignedUrl, fileKey } = data;
+
+        await axios.put(presignedUrl, file, {
+          headers: {
+            "Content-Type": file.type,
+          },
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total) {
+              const percent = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              );
+              setFileState((prev) => ({ ...prev, progress: percent }));
+            }
+          },
+        });
+
+        setFileState((prev) => ({
+          ...prev,
+          uploading: false,
+          progress: 100,
+          errorMessage: null,
+        }));
+        toast.success("File uploaded successfully!");
+        onChange(fileKey);
+      } catch {
+        setFileState((prev) => ({
+          ...prev,
+          uploading: false,
+          errorMessage: "Failed to upload file. Please try again.",
+          progress: 0,
+        }));
+        toast.error("Failed to upload file. Please try again.");
+      }
+    },
+    [onChange]
+  );
+
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      if (acceptedFiles.length) {
+        const file = acceptedFiles[0];
+
+        setFileState({
+          objectUrl: URL.createObjectURL(file),
+          uploading: true,
+          progress: 0,
+          errorMessage: null,
+          isDeleting: false,
+        });
+
+        await uploadFile(file);
+      }
+    },
+    [uploadFile]
+  );
 
   const onDropRejected = (fileRejections: FileRejection[]) => {
     if (fileRejections.length) {
@@ -36,9 +127,20 @@ export function Uploader({ value, onChange }: UploaderProps) {
       } else if (rejection.errors.some((e) => e.code === "too-many-files")) {
         message = "You can only upload one file at a time.";
       }
-      setError(message);
+      setFileState((prev) => ({ ...prev, errorMessage: message }));
       toast.error(message);
     }
+  };
+
+  const handleRemove = () => {
+    setFileState({
+      objectUrl: null,
+      uploading: false,
+      progress: 0,
+      errorMessage: null,
+      isDeleting: false,
+    });
+    onChange("");
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -48,23 +150,34 @@ export function Uploader({ value, onChange }: UploaderProps) {
     accept: { "image/*": [] },
     maxFiles: 1,
     maxSize: 5 * 1024 * 1024,
+    disabled:
+      fileState.uploading || fileState.isDeleting || !!fileState.objectUrl,
   });
+
+  useEffect(() => {
+    if (fileState.objectUrl && fileState.objectUrl.startsWith("blob:")) {
+      const urlToRevoke = fileState.objectUrl;
+      return () => {
+        URL.revokeObjectURL(urlToRevoke);
+      };
+    }
+  }, [fileState.objectUrl]);
 
   return (
     <Card
       className={cn(
-        "border border-dashed border-input dark:bg-input/30 rounded-lg p-4 flex flex-col items-center justify-center text-center transition-colors duration-150 min-h-32 hover:bg-muted/60 cursor-pointer",
+        "border border-dashed border-input dark:bg-input/30 rounded-lg p-4 flex flex-col items-center justify-center text-center transition-colors duration-150 min-h-32 dark:hover:bg-muted/60 cursor-pointer",
         isDragActive && "border-primary border-solid"
       )}
       {...getRootProps()}
     >
       <CardContent className="p-0 w-full flex flex-col items-center justify-center">
-        <Input {...getInputProps()} ref={inputRef} />
-        {error ? (
+        <Input {...getInputProps()} />
+        {fileState.errorMessage ? (
           <div className="flex flex-col items-center gap-2 w-full">
             <AlertCircle className="size-7 text-destructive" />
             <span className=" text-sm text-destructive font-medium w-full text-center">
-              {error}
+              {fileState.errorMessage}
             </span>
             <Button
               type="button"
@@ -73,37 +186,54 @@ export function Uploader({ value, onChange }: UploaderProps) {
               className="mt-1"
               onClick={(e) => {
                 e.stopPropagation();
-                setError("");
+                setFileState((prev) => ({ ...prev, errorMessage: null }));
               }}
             >
               Try uploading again
             </Button>
           </div>
-        ) : value ? (
-          <div className="flex flex-col items-center gap-2 w-full">
-            {value.type.startsWith("image/") && (
-              <Image
-                src={URL.createObjectURL(value)}
-                alt={value.name}
-                className="w-24 h-24 object-cover rounded-md border mb-2"
-                fill
-              />
+        ) : fileState.objectUrl ? (
+          <div className="relative flex flex-col items-center gap-2 w-full h-56">
+            {fileState.uploading ? (
+              <>
+                <div className="size-32 bg-muted rounded-md border mb-2 flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+                </div>
+                <span className="text-sm font-medium">Uploading...</span>
+                <Progress
+                  value={fileState.progress}
+                  className="w-1/3 rounded-md"
+                />
+              </>
+            ) : (
+              <>
+                <div className="relative w-full h-full flex items-center justify-center">
+                  <Image
+                    src={fileState.objectUrl}
+                    alt="Uploaded image"
+                    fill
+                    className="object-contain h-full"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    aria-label="Remove image"
+                    className="absolute top-2 right-2 z-10 shadow-md"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemove();
+                    }}
+                    disabled={fileState.uploading}
+                  >
+                    <X className="size-5" />
+                  </Button>
+                </div>
+                <span className="text-sm font-medium truncate max-w-full">
+                  {(value ?? "").split("-").slice(5).join("-")}
+                </span>
+              </>
             )}
-            <span className="text-sm font-medium truncate max-w-full">
-              {value.name}
-            </span>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="mt-2"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (onChange) onChange(null);
-              }}
-            >
-              Remove
-            </Button>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2 w-full">

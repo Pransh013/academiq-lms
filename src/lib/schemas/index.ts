@@ -28,7 +28,6 @@ export const courseCategory = [
   "Photography",
 ] as const;
 
-
 export const newCourseSchema = z.object({
   title: z
     .string()
@@ -62,4 +61,11 @@ export const newCourseSchema = z.object({
     required_error: "Select a category",
   }),
   slug: z.string().min(1, "Slug is required").max(100, "Max 100 characters"),
+});
+
+export const fileUploadSchema = z.object({
+  fileName: z.string().min(1, "File name is required"),
+  contentType: z.string().min(1, "Content type is required"),
+  size: z.number().min(1, "File size must be greater than 0"),
+  isImage: z.boolean(),
 });
