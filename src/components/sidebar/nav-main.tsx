@@ -29,9 +29,8 @@ export function NavMain({
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip="Quick Create"
-              className="bg-primary text-primary-foreground hover:bg-primary/85 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 transition-colors duration-100 ease-linear"
+              className="border bg-background hover:bg-accent/90 hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 min-w-8 transition-colors duration-150 ease-linear"
               asChild
-              isActive={pathname === "/admin/courses/new"}
             >
               <Link href="/admin/courses/new">
                 <IconCirclePlusFilled />

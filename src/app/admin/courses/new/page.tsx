@@ -39,6 +39,7 @@ import {
   newCourseSchema,
 } from "@/lib/schemas";
 import { TextEditor } from "@/components/text-editor/editor";
+import { Uploader } from "@/components/file-uploader/uploader";
 
 export default function NewCoursePage() {
   const form = useForm<NewCourseType>({
@@ -163,7 +164,7 @@ export default function NewCoursePage() {
                   <FormItem>
                     <FormLabel>Thumbnail Image</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Uploader />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
