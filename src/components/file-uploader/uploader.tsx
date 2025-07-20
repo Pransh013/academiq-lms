@@ -1,16 +1,16 @@
 "use client";
 
 import { type FileRejection, useDropzone } from "react-dropzone";
+import { Upload, AlertCircle, X, Loader2 } from "lucide-react";
 import { useCallback, useState, useEffect } from "react";
-import { Upload, AlertCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
 import axios from "axios";
 
 import { Card, CardContent } from "../ui/card";
 import { Progress } from "../ui/progress";
-import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 import { cn } from "@/lib/utils";
 
 interface FileState {
@@ -22,7 +22,7 @@ interface FileState {
 }
 
 interface UploaderProps {
-  value?: string;
+  value: string;
   onChange: (fileKey: string) => void;
 }
 
@@ -79,7 +79,7 @@ export function Uploader({ value, onChange }: UploaderProps) {
         setFileState((prev) => ({
           ...prev,
           uploading: false,
-          progress: 100,
+          progress: 0,
           errorMessage: null,
         }));
         toast.success("File uploaded successfully!");
@@ -132,15 +132,22 @@ export function Uploader({ value, onChange }: UploaderProps) {
     }
   };
 
-  const handleRemove = () => {
-    setFileState({
-      objectUrl: null,
-      uploading: false,
-      progress: 0,
-      errorMessage: null,
-      isDeleting: false,
-    });
-    onChange("");
+  const handleRemove = async () => {
+    if (!value) return;
+    setFileState((prev) => ({ ...prev, isDeleting: true }));
+    try {
+      await axios.delete("/api/s3/delete", { data: { key: value } });
+      setFileState((prev) => ({
+        ...prev,
+        objectUrl: null,
+        isDeleting: false,
+      }));
+      onChange("");
+      toast.success("File deleted successfully!");
+    } catch {
+      setFileState((prev) => ({ ...prev, isDeleting: false }));
+      toast.error("Failed to delete file. Please try again.");
+    }
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -166,7 +173,7 @@ export function Uploader({ value, onChange }: UploaderProps) {
   return (
     <Card
       className={cn(
-        "border border-dashed border-input dark:bg-input/30 rounded-lg p-4 flex flex-col items-center justify-center text-center transition-colors duration-150 min-h-32 dark:hover:bg-muted/60 cursor-pointer",
+        "border border-dashed border-input dark:bg-input/30 rounded-lg p-4 flex flex-col items-center justify-center text-center transition-colors duration-150 min-h-32 cursor-pointer",
         isDragActive && "border-primary border-solid"
       )}
       {...getRootProps()}
@@ -197,7 +204,7 @@ export function Uploader({ value, onChange }: UploaderProps) {
             {fileState.uploading ? (
               <>
                 <div className="size-32 bg-muted rounded-md border mb-2 flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+                  <div className="animate-spin rounded-full size-8 border-b-2 border-primary" />
                 </div>
                 <span className="text-sm font-medium">Uploading...</span>
                 <Progress
@@ -220,13 +227,17 @@ export function Uploader({ value, onChange }: UploaderProps) {
                     size="icon"
                     aria-label="Remove image"
                     className="absolute top-2 right-2 z-10 shadow-md"
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.stopPropagation();
-                      handleRemove();
+                      await handleRemove();
                     }}
-                    disabled={fileState.uploading}
+                    disabled={fileState.uploading || fileState.isDeleting}
                   >
-                    <X className="size-5" />
+                    {fileState.isDeleting ? (
+                      <Loader2 className="animate-spin size-5" />
+                    ) : (
+                      <X className="size-5" />
+                    )}
                   </Button>
                 </div>
                 <span className="text-sm font-medium truncate max-w-full">

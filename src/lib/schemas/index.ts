@@ -69,3 +69,7 @@ export const fileUploadSchema = z.object({
   size: z.number().min(1, "File size must be greater than 0"),
   isImage: z.boolean(),
 });
+
+export const fileDeleteSchema = z.object({
+  key: z.string().min(1, "S3 key is required"),
+});
