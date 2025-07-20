@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useSignout } from "@/lib/hooks/useSignout";
+import { useSignout } from "@/lib/hooks/use-signout";
 import { UserDropdownProps } from "@/lib/types";
 import { getUserDisplayMeta } from "@/lib/utils";
 

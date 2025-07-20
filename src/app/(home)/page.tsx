@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
-import { useSignout } from "@/lib/hooks/useSignout";
+import { useSignout } from "@/lib/hooks/use-signout";
 
 export default function HomePage() {
   const router = useRouter();

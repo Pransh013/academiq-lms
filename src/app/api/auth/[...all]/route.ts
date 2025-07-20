@@ -12,7 +12,7 @@ import ip from "@arcjet/ip";
 import { toNextJsHandler } from "better-auth/next-js";
 import { NextRequest } from "next/server";
 
-import aj from "@/lib/arcjet";
+import arcjet from "@/lib/arcjet";
 import { auth } from "@/lib/auth";
 
 const emailOptions = {
@@ -53,17 +53,17 @@ async function protect(req: NextRequest): Promise<ArcjetDecision> {
     const body = await req.clone().json();
 
     if (typeof body.email === "string") {
-      return aj
+      return arcjet
         .withRule(protectSignup(signupOptions))
         .protect(req, { email: body.email, fingerprint: userId });
     } else {
-      return aj
+      return arcjet
         .withRule(detectBot(botOptions))
         .withRule(slidingWindow(rateLimitOptions))
         .protect(req, { fingerprint: userId });
     }
   } else {
-    return aj
+    return arcjet
       .withRule(detectBot(botOptions))
       .protect(req, { fingerprint: userId });
   }

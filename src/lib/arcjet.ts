@@ -4,7 +4,7 @@ import arcjet, { shield } from "@arcjet/next";
 
 import { env } from "@/env/server";
 
-const aj = arcjet({
+export default arcjet({
   key: env.ARCJET_KEY,
   characteristics: ["fingerprint"],
   rules: [
@@ -13,5 +13,3 @@ const aj = arcjet({
     }),
   ],
 });
-
-export default aj;

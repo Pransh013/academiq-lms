@@ -1,11 +1,51 @@
-import { env } from "@/env/client";
-import { s3Client } from "@/lib/s3-client";
-import { fileDeleteSchema } from "@/lib/schemas";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { NextRequest, NextResponse } from "next/server";
+import { detectBot, slidingWindow } from "@arcjet/next";
+import { headers } from "next/headers";
+
+import { env } from "@/env/client";
+import arcjet from "@/lib/arcjet";
+import { auth } from "@/lib/auth";
+import { s3Client } from "@/lib/s3-client";
+import { fileDeleteSchema } from "@/lib/schemas";
+
+const aj = arcjet
+  .withRule(
+    detectBot({
+      mode: "LIVE",
+      allow: [],
+    })
+  )
+  .withRule(
+    slidingWindow({
+      mode: "LIVE",
+      max: 4,
+      interval: "1m",
+    })
+  );
 
 export async function DELETE(req: NextRequest) {
   try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    if (!session?.user?.id) {
+      return {
+        status: "error",
+        message: "Unauthorized",
+      };
+    }
+
+    const decision = await aj.protect(req, {
+      fingerprint: session.user.id,
+    });
+    if (decision.isDenied()) {
+      return NextResponse.json(
+        { error: "Request blocked by security policy." },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
     const { success, data, error } = fileDeleteSchema.safeParse(body);
 

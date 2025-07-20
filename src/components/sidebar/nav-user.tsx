@@ -27,7 +27,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { authClient } from "@/lib/auth-client";
 import { getUserDisplayMeta } from "@/lib/utils";
-import { useSignout } from "@/lib/hooks/useSignout";
+import { useSignout } from "@/lib/hooks/use-signout";
 import { UserDropdownProps } from "@/lib/types";
 
 function UserAvatarInfo({ name, email, image }: UserDropdownProps) {
@@ -120,7 +120,7 @@ export function NavUser() {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={signOut} className="text-destructive">
-              <IconLogout className="text-destructiv"/>
+              <IconLogout className="text-destructiv" />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>

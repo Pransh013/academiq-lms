@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Plus, Sparkles } from "lucide-react";
+import { ArrowLeft, Loader2, Plus, Sparkles } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import slugify from "slugify";
@@ -40,8 +40,16 @@ import {
 } from "@/lib/schemas";
 import { TextEditor } from "@/components/text-editor/editor";
 import { Uploader } from "@/components/file-uploader/uploader";
+import { useTransition } from "react";
+import { tryCatch } from "@/lib/utils/try-catch";
+import { createCourse } from "./actions";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function NewCoursePage() {
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
   const form = useForm<NewCourseType>({
     resolver: zodResolver(newCourseSchema),
     defaultValues: {
@@ -60,6 +68,23 @@ export default function NewCoursePage() {
 
   function onSubmit(values: NewCourseType) {
     console.log(values);
+    startTransition(async () => {
+      const { data: response, error } = await tryCatch(createCourse(values));
+
+      if (error) {
+        toast.error("Something went wrong. Please try again.");
+        return;
+      }
+
+      if (response.status === "error") {
+        toast.error(response.message);
+        return;
+      }
+
+      toast.success(response.message);
+      form.reset();
+      router.push("/admin/courses");
+    });
   }
 
   return (
@@ -282,8 +307,16 @@ export default function NewCoursePage() {
                 />
               </div>
 
-              <Button type="submit">
-                <Plus /> Create Course
+              <Button type="submit" disabled={isPending} className="min-w-36">
+                {isPending ? (
+                  <>
+                    <Loader2 className="size-5 animate-spin" /> Creating
+                  </>
+                ) : (
+                  <>
+                    <Plus /> Create Course
+                  </>
+                )}
               </Button>
             </form>
           </Form>

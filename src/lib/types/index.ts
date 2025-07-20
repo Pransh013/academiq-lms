@@ -8,3 +8,9 @@ export type UserDropdownProps = {
 };
 
 export type NewCourseType = z.infer<typeof newCourseSchema>;
+
+export type ActionResponse<T> = {
+  status: "success" | "error";
+  message: string;
+  data?: T;
+};
