@@ -1,22 +1,54 @@
 "use server";
 
-import { headers } from "next/headers";
+import { detectBot, request, slidingWindow } from "@arcjet/next";
 
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { newCourseSchema } from "@/lib/schemas";
 import { ActionResponse, NewCourseType } from "@/lib/types";
+import { requireAdmin } from "@/app/data/admin/require-admin";
+import arcjet from "@/lib/arcjet";
+
+const aj = arcjet
+  .withRule(
+    detectBot({
+      mode: "LIVE",
+      allow: [],
+    })
+  )
+  .withRule(
+    slidingWindow({
+      mode: "LIVE",
+      max: 4,
+      interval: "1m",
+    })
+  );
 
 export async function createCourse(
   values: NewCourseType
 ): Promise<ActionResponse<void>> {
-  const session = await auth.api.getSession({
-    headers: await headers(),
+  const session = await requireAdmin();
+
+  const req = await request();
+  const decision = await aj.protect(req, {
+    fingerprint: session.user.id,
   });
-  if (!session?.user?.id) {
+
+  if (decision.isDenied()) {
+    if (decision.reason.isRateLimit()) {
+      return {
+        status: "error",
+        message: "Too many requests. Please try again later.",
+      };
+    }
+    if (decision.reason.isBot()) {
+      return {
+        status: "error",
+        message: "Request blocked: bot detected.",
+      };
+    }
     return {
       status: "error",
-      message: "Unauthorized",
+      message: "Request denied by security policy.",
     };
   }
 
@@ -39,7 +71,7 @@ export async function createCourse(
       status: "success",
       message: "Course created succesfully",
     };
-  } catch (error) {
+  } catch {
     return {
       status: "error",
       message: "Failed to create course",

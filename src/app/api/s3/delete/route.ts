@@ -1,13 +1,12 @@
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { NextRequest, NextResponse } from "next/server";
 import { detectBot, slidingWindow } from "@arcjet/next";
-import { headers } from "next/headers";
 
 import { env } from "@/env/client";
 import arcjet from "@/lib/arcjet";
-import { auth } from "@/lib/auth";
 import { s3Client } from "@/lib/s3-client";
 import { fileDeleteSchema } from "@/lib/schemas";
+import { requireAdmin } from "@/app/data/admin/require-admin";
 
 const aj = arcjet
   .withRule(
@@ -25,10 +24,8 @@ const aj = arcjet
   );
 
 export async function DELETE(req: NextRequest) {
+  const session = await requireAdmin();
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
     if (!session?.user?.id) {
       return {
         status: "error",

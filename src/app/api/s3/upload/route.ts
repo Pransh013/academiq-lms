@@ -2,14 +2,13 @@ import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { detectBot, slidingWindow } from "@arcjet/next";
 import { NextRequest, NextResponse } from "next/server";
-import { headers } from "next/headers";
 import { v4 as uuid } from "uuid";
 
 import { env } from "@/env/client";
 import { s3Client } from "@/lib/s3-client";
 import { fileUploadSchema } from "@/lib/schemas";
 import arcjet from "@/lib/arcjet";
-import { auth } from "@/lib/auth";
+import { requireAdmin } from "@/app/data/admin/require-admin";
 
 const aj = arcjet
   .withRule(
@@ -27,10 +26,8 @@ const aj = arcjet
   );
 
 export async function POST(req: NextRequest) {
+  const session = await requireAdmin();
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

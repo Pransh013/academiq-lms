@@ -193,7 +193,13 @@ export function Uploader({ value, onChange }: UploaderProps) {
               className="mt-1"
               onClick={(e) => {
                 e.stopPropagation();
-                setFileState((prev) => ({ ...prev, errorMessage: null }));
+                setFileState((prev) => ({
+                  ...prev,
+                  objectUrl: null,
+                  uploading: false,
+                  progress: 0,
+                  errorMessage: null,
+                }));
               }}
             >
               Try uploading again
