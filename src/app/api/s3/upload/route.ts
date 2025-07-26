@@ -20,7 +20,7 @@ const aj = arcjet
   .withRule(
     slidingWindow({
       mode: "LIVE",
-      max: 4,
+      max: 5,
       interval: "1m",
     })
   );
@@ -28,10 +28,6 @@ const aj = arcjet
 export async function POST(req: NextRequest) {
   const session = await requireAdmin();
   try {
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const decision = await aj.protect(req, {
       fingerprint: session.user.id,
     });

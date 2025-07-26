@@ -18,7 +18,7 @@ const aj = arcjet
   .withRule(
     slidingWindow({
       mode: "LIVE",
-      max: 4,
+      max: 5,
       interval: "1m",
     })
   );
@@ -26,13 +26,6 @@ const aj = arcjet
 export async function DELETE(req: NextRequest) {
   const session = await requireAdmin();
   try {
-    if (!session?.user?.id) {
-      return {
-        status: "error",
-        message: "Unauthorized",
-      };
-    }
-
     const decision = await aj.protect(req, {
       fingerprint: session.user.id,
     });

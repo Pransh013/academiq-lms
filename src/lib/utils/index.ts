@@ -1,8 +1,9 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { env } from "@/env/client";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 export function getUserDisplayMeta(user: {
@@ -34,4 +35,17 @@ export function getUserDisplayMeta(user: {
     avatarImage: getAvatarImage(),
     avatarFallback: getAvatarFallback(),
   };
+}
+
+export function construcUrl(key: string) {
+  return `https://${env.NEXT_PUBLIC_S3_BUCKET_NAME}.fly.storage.tigris.dev/${key}`;
+}
+
+export function formatDuration(minutes: number) {
+  const hrs = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+
+  if (hrs && mins) return `${hrs}h ${mins}min`;
+  if (hrs) return `${hrs}h`;
+  return `${mins}min`;
 }

@@ -1,3 +1,6 @@
+import { redirect } from "next/navigation";
+import Link from "next/link";
+
 import {
   Card,
   CardHeader,
@@ -8,9 +11,12 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { NavbarLogo } from "@/components/ui/navbar-logo";
-import Link from "next/link";
+import { requireAdmin } from "../data/admin/require-admin";
 
-export default function NotAdminPage() {
+export default async function NotAdminPage() {
+  const session = await requireAdmin();
+  if (session) return redirect("/");
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground transition-colors">
       <div className="absolute top-6 left-6 flex items-center gap-4">
