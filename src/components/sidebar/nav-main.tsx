@@ -24,7 +24,7 @@ export function NavMain({
   const pathname = usePathname();
   return (
     <SidebarGroup>
-      <SidebarGroupContent className="flex flex-col gap-6 lg:gap-8">
+      <SidebarGroupContent className="flex flex-col gap-4 lg:gap-6">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton

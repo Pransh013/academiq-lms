@@ -11,7 +11,7 @@ import { Card, CardContent } from "../ui/card";
 import { Progress } from "../ui/progress";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { cn } from "@/lib/utils";
+import { cn, construcUrl } from "@/lib/utils";
 
 interface FileState {
   objectUrl: string | null;
@@ -32,8 +32,9 @@ interface PresignedUrlResponse {
 }
 
 export function Uploader({ value, onChange }: UploaderProps) {
+  const fileUrl = value ? construcUrl(value) : null;
   const [fileState, setFileState] = useState<FileState>({
-    objectUrl: null,
+    objectUrl: fileUrl,
     uploading: false,
     progress: 0,
     errorMessage: null,

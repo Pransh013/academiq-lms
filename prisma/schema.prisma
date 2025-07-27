@@ -87,7 +87,7 @@ model Course {
   title            String
   description      String
   fileKey          String
-  price            Decimal      @db.Decimal(10, 2)
+  price            Int
   duration         Int
   level            CourseLevel  @default(Beginner)
   category         String

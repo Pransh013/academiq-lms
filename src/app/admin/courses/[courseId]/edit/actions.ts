@@ -18,13 +18,14 @@ const aj = arcjet
   .withRule(
     slidingWindow({
       mode: "LIVE",
-      max: 3,
+      max: 4,
       interval: "1m",
     })
   );
 
-export async function createCourse(
-  formData: CourseType
+export async function editCourse(
+  formData: CourseType,
+  id: string
 ): Promise<ActionResponse<void>> {
   const session = await requireAdmin();
 
@@ -61,20 +62,23 @@ export async function createCourse(
   }
 
   try {
-    await prisma.course.create({
+    await prisma.course.update({
+      where: {
+        id,
+        userId: session.user.id,
+      },
       data: {
         ...data,
-        userId: session.user.id,
       },
     });
     return {
       status: "success",
-      message: "Course created succesfully",
+      message: "Course updated succesfully",
     };
   } catch {
     return {
       status: "error",
-      message: "Failed to create course",
+      message: "Failed to update course",
     };
   }
 }

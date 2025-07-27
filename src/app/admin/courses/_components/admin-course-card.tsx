@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { BarChart, Edit2, Timer } from "lucide-react";
 
-import { AdminCourseType } from "@/app/data/admin/get-courses-admin";
+import { AdminCourseCardType } from "@/app/data/admin/get-courses-admin";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,7 +23,7 @@ export function AdminCourseCard({
   duration,
   price,
   level,
-}: AdminCourseType) {
+}: AdminCourseCardType) {
   return (
     <Card className="relative max-w-sm shadow-none bg-muted gap-4">
       <CardHeader>
@@ -35,7 +35,7 @@ export function AdminCourseCard({
           className="w-full rounded-lg aspect-video h-full object-cover"
         />
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent className="space-y-2 flex flex-col justify-between h-full">
         <CardTitle className="text-xl line-clamp-1">{title}</CardTitle>
         <CardDescription className="line-clamp-2">
           {smallDescription}
@@ -54,7 +54,7 @@ export function AdminCourseCard({
           </Badge>
         </div>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="mt-auto">
         <Button asChild className="w-full">
           <Link href={`/admin/courses/${id}/edit`}>
             <Edit2 />

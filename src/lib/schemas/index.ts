@@ -28,7 +28,7 @@ export const courseCategory = [
   "Photography",
 ] as const;
 
-export const newCourseSchema = z.object({
+export const courseSchema = z.object({
   title: z
     .string()
     .min(3, "Title must be at least 3 characters")
