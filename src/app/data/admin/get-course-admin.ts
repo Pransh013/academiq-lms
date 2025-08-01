@@ -20,6 +20,23 @@ export async function getCourseAdmin(id: string) {
       duration: true,
       level: true,
       status: true,
+      chapters: {
+        select: {
+          id: true,
+          title: true,
+          position: true,
+          lessons: {
+            select: {
+              id: true,
+              title: true,
+              position: true,
+              description: true,
+              thumbnailKey: true,
+              videoKey: true,
+            },
+          },
+        },
+      },
     },
   });
 

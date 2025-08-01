@@ -25,7 +25,7 @@ export function AdminCourseCard({
   level,
 }: AdminCourseCardType) {
   return (
-    <Card className="relative max-w-sm shadow-none bg-muted gap-4">
+    <Card className="relative max-w-sm shadow-none bg-muted/70 gap-4">
       <CardHeader>
         <Image
           src={construcUrl(fileKey)}

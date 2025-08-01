@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { getCourseAdmin } from "@/app/data/admin/get-course-admin";
 import { EditCourseForm } from "./_components/edit-course-form";
+import { CourseStructure } from "./_components/course-structure";
 
 export default async function EditCoursePage({
   params,
@@ -60,8 +61,7 @@ export default async function EditCoursePage({
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-6">
-              {/* TODO: Add your course structure management UI here */}
-              <p className="text-muted-foreground">Coming soon...</p>
+              <CourseStructure data={course} />
             </CardContent>
           </Card>
         </TabsContent>
