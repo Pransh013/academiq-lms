@@ -7,6 +7,7 @@ import arcjet from "@/lib/arcjet";
 import { s3Client } from "@/lib/s3-client";
 import { fileDeleteSchema } from "@/lib/schemas";
 import { requireAdmin } from "@/app/data/admin/require-admin";
+import { verifyRequest } from "@/lib/utils/verify-request";
 
 const aj = arcjet
   .withRule(
@@ -25,17 +26,13 @@ const aj = arcjet
 
 export async function DELETE(req: NextRequest) {
   const session = await requireAdmin();
-  try {
-    const decision = await aj.protect(req, {
-      fingerprint: session.user.id,
-    });
-    if (decision.isDenied()) {
-      return NextResponse.json(
-        { error: "Request blocked by security policy." },
-        { status: 429 }
-      );
-    }
 
+  const deniedReason = await verifyRequest(aj, session.user.id, req);
+  if (deniedReason) {
+    return NextResponse.json({ error: deniedReason }, { status: 429 });
+  }
+
+  try {
     const body = await req.json();
     const { success, data, error } = fileDeleteSchema.safeParse(body);
 

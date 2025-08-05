@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { courseSchema } from "../schemas";
+import {
+  courseSchema,
+  reorderChapterSchema,
+  reorderLessonSchema,
+} from "../schemas";
 
 export type UserDropdownProps = {
   email: string;
@@ -8,6 +12,10 @@ export type UserDropdownProps = {
 };
 
 export type CourseType = z.infer<typeof courseSchema>;
+
+export type ReorderChapterType = z.infer<typeof reorderChapterSchema>;
+
+export type ReorderLessonType = z.infer<typeof reorderLessonSchema>;
 
 export type ActionResponse<T> = {
   status: "success" | "error";

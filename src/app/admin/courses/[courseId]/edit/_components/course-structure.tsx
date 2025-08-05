@@ -27,10 +27,12 @@ import { AdminCourseType } from "@/app/data/admin/get-course-admin";
 import { cn } from "@/lib/utils";
 import {
   Collapsible,
-  CollapsibleContent, 
+  CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { reorderChapters, reorderLessons } from "../actions";
 
 interface SortableItemProps {
   id: string;
@@ -77,37 +79,67 @@ export function CourseStructure({ data }: { data: AdminCourseType }) {
     const overType = over.data.current?.type;
 
     if (activeType === "chapter" && overType === "chapter") {
-      setItems((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over.id);
+      const newItems = arrayMove(
+        items,
+        items.findIndex((item) => item.id === active.id),
+        items.findIndex((item) => item.id === over.id)
+      ).map((item, index) => ({
+        ...item,
+        order: index + 1,
+      }));
 
-        return arrayMove(items, oldIndex, newIndex).map((item, index) => ({
-          ...item,
-          order: index + 1,
-        }));
+      setItems(newItems);
+
+      const reorderPromise = reorderChapters({
+        courseId: data.id,
+        chapters: newItems.map((chapter) => ({
+          id: chapter.id,
+          position: chapter.order,
+        })),
+      });
+
+      toast.promise(reorderPromise, {
+        loading: "Reordering chapters...",
+        success: (res) => res.message,
+        error: () => "Failed to reorder chapters",
       });
     } else if (activeType === "lesson" && overType === "lesson") {
       const activeChapterId = active.data.current?.chapterId;
       const overChapterId = over.data.current?.chapterId;
 
       if (activeChapterId && activeChapterId === overChapterId) {
-        setItems((prevItems) =>
-          prevItems.map((item) =>
-            item.id !== activeChapterId
-              ? item
-              : {
-                  ...item,
-                  lessons: arrayMove(
-                    item.lessons,
-                    item.lessons.findIndex((l) => l.id === active.id),
-                    item.lessons.findIndex((l) => l.id === over.id)
-                  ).map((lesson, index) => ({
-                    ...lesson,
-                    order: index + 1,
-                  })),
-                }
-          )
-        );
+        const newItems = items.map((chapter) => {
+          if (chapter.id !== activeChapterId) return chapter;
+
+          const newLessons = arrayMove(
+            chapter.lessons,
+            chapter.lessons.findIndex((l) => l.id === active.id),
+            chapter.lessons.findIndex((l) => l.id === over.id)
+          ).map((lesson, index) => ({
+            ...lesson,
+            order: index + 1,
+          }));
+
+          return { ...chapter, lessons: newLessons };
+        });
+
+        setItems(newItems);
+        const reorderPromise = reorderLessons({
+          chapterId: activeChapterId,
+          lessons:
+            newItems
+              .find((chapter) => chapter.id === activeChapterId)
+              ?.lessons.map((lesson) => ({
+                id: lesson.id,
+                position: lesson.order,
+              })) || [],
+        });
+
+        toast.promise(reorderPromise, {
+          loading: "Reordering lessons...",
+          success: (res) => res.message,
+          error: () => "Failed to reorder lessons",
+        });
       }
     }
   }

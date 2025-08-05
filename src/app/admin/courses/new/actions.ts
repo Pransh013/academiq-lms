@@ -1,12 +1,13 @@
 "use server";
 
-import { detectBot, request, slidingWindow } from "@arcjet/next";
+import { detectBot, slidingWindow } from "@arcjet/next";
 
 import { prisma } from "@/lib/prisma";
 import { courseSchema } from "@/lib/schemas";
 import { ActionResponse, CourseType } from "@/lib/types";
 import { requireAdmin } from "@/app/data/admin/require-admin";
 import arcjet from "@/lib/arcjet";
+import { verifyRequest } from "@/lib/utils/verify-request";
 
 const aj = arcjet
   .withRule(
@@ -28,28 +29,9 @@ export async function createCourse(
 ): Promise<ActionResponse<void>> {
   const session = await requireAdmin();
 
-  const req = await request();
-  const decision = await aj.protect(req, {
-    fingerprint: session.user.id,
-  });
-
-  if (decision.isDenied()) {
-    if (decision.reason.isRateLimit()) {
-      return {
-        status: "error",
-        message: "Too many requests. Please try again later.",
-      };
-    }
-    if (decision.reason.isBot()) {
-      return {
-        status: "error",
-        message: "Request blocked: bot detected.",
-      };
-    }
-    return {
-      status: "error",
-      message: "Request denied by security policy.",
-    };
+  const deniedReason = await verifyRequest(aj, session.user.id);
+  if (deniedReason) {
+    return { status: "error", message: deniedReason };
   }
 
   const { success, data, error } = courseSchema.safeParse(formData);

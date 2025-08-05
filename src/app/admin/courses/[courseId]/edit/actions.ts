@@ -1,12 +1,22 @@
 "use server";
 
-import { detectBot, request, slidingWindow } from "@arcjet/next";
+import { detectBot, slidingWindow } from "@arcjet/next";
 
 import { prisma } from "@/lib/prisma";
-import { courseSchema } from "@/lib/schemas";
-import { ActionResponse, CourseType } from "@/lib/types";
+import {
+  courseSchema,
+  reorderChapterSchema,
+  reorderLessonSchema,
+} from "@/lib/schemas";
+import {
+  ActionResponse,
+  CourseType,
+  ReorderChapterType,
+  ReorderLessonType,
+} from "@/lib/types";
 import { requireAdmin } from "@/app/data/admin/require-admin";
 import arcjet from "@/lib/arcjet";
+import { verifyRequest } from "@/lib/utils/verify-request";
 
 const aj = arcjet
   .withRule(
@@ -18,7 +28,7 @@ const aj = arcjet
   .withRule(
     slidingWindow({
       mode: "LIVE",
-      max: 4,
+      max: 5,
       interval: "1m",
     })
   );
@@ -29,28 +39,9 @@ export async function editCourse(
 ): Promise<ActionResponse<void>> {
   const session = await requireAdmin();
 
-  const req = await request();
-  const decision = await aj.protect(req, {
-    fingerprint: session.user.id,
-  });
-
-  if (decision.isDenied()) {
-    if (decision.reason.isRateLimit()) {
-      return {
-        status: "error",
-        message: "Too many requests. Please try again later.",
-      };
-    }
-    if (decision.reason.isBot()) {
-      return {
-        status: "error",
-        message: "Request blocked: bot detected.",
-      };
-    }
-    return {
-      status: "error",
-      message: "Request denied by security policy.",
-    };
+  const deniedReason = await verifyRequest(aj, session.user.id);
+  if (deniedReason) {
+    return { status: "error", message: deniedReason };
   }
 
   const { success, data, error } = courseSchema.safeParse(formData);
@@ -79,6 +70,90 @@ export async function editCourse(
     return {
       status: "error",
       message: "Failed to update course",
+    };
+  }
+}
+
+export async function reorderChapters(
+  payload: ReorderChapterType
+): Promise<ActionResponse<void>> {
+  const session = await requireAdmin();
+
+  const deniedReason = await verifyRequest(aj, session.user.id);
+  if (deniedReason) {
+    return { status: "error", message: deniedReason };
+  }
+
+  const { success, data, error } = reorderChapterSchema.safeParse(payload);
+  if (!success) {
+    return {
+      status: "error",
+      message: error.message || "Invalid Course Structure",
+    };
+  }
+
+  const { courseId, chapters } = data;
+
+  try {
+    await prisma.$transaction(
+      chapters.map((chapter) =>
+        prisma.chapter.update({
+          where: { id: chapter.id, courseId },
+          data: { position: chapter.position },
+        })
+      )
+    );
+
+    return {
+      status: "success",
+      message: "Chapters reordered successfully",
+    };
+  } catch {
+    return {
+      status: "error",
+      message: "Failed to reorder chapters",
+    };
+  }
+}
+
+export async function reorderLessons(
+  payload: ReorderLessonType
+): Promise<ActionResponse<void>> {
+  const session = await requireAdmin();
+
+  const deniedReason = await verifyRequest(aj, session.user.id);
+  if (deniedReason) {
+    return { status: "error", message: deniedReason };
+  }
+
+  const { success, data, error } = reorderLessonSchema.safeParse(payload);
+  if (!success) {
+    return {
+      status: "error",
+      message: error.message || "Invalid Course Structure",
+    };
+  }
+
+  const { chapterId, lessons } = data;
+
+  try {
+    await prisma.$transaction(
+      lessons.map((lesson) =>
+        prisma.lesson.update({
+          where: { id: lesson.id, chapterId },
+          data: { position: lesson.position },
+        })
+      )
+    );
+
+    return {
+      status: "success",
+      message: "Lessons reordered successfully",
+    };
+  } catch {
+    return {
+      status: "error",
+      message: "Failed to reorder lessons",
     };
   }
 }

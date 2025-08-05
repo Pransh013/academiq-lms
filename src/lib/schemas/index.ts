@@ -73,3 +73,23 @@ export const fileUploadSchema = z.object({
 export const fileDeleteSchema = z.object({
   key: z.string().min(1, "S3 key is required"),
 });
+
+export const reorderChapterSchema = z.object({
+  courseId: z.string(),
+  chapters: z.array(
+    z.object({
+      id: z.string(),
+      position: z.number(),
+    })
+  ),
+});
+
+export const reorderLessonSchema = z.object({
+  chapterId: z.string(),
+  lessons: z.array(
+    z.object({
+      id: z.string(),
+      position: z.number(),
+    })
+  ),
+});
