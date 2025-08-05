@@ -34,8 +34,10 @@ export async function getCourseAdmin(id: string) {
               thumbnailKey: true,
               videoKey: true,
             },
+            orderBy: { position: "asc" },
           },
         },
+        orderBy: { position: "asc" },
       },
     },
   });
