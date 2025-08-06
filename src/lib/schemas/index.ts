@@ -85,6 +85,7 @@ export const reorderChapterSchema = z.object({
 });
 
 export const reorderLessonSchema = z.object({
+  courseId: z.string(),
   chapterId: z.string(),
   lessons: z.array(
     z.object({

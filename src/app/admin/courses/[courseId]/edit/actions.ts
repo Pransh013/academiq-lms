@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { detectBot, slidingWindow } from "@arcjet/next";
 
 import { prisma } from "@/lib/prisma";
@@ -104,6 +105,8 @@ export async function reorderChapters(
       )
     );
 
+    revalidatePath(`/admin/courses/${courseId}/edit`);
+
     return {
       status: "success",
       message: "Chapters reordered successfully",
@@ -134,7 +137,7 @@ export async function reorderLessons(
     };
   }
 
-  const { chapterId, lessons } = data;
+  const { courseId, chapterId, lessons } = data;
 
   try {
     await prisma.$transaction(
@@ -145,6 +148,8 @@ export async function reorderLessons(
         })
       )
     );
+
+    revalidatePath(`/admin/courses/${courseId}/edit`);
 
     return {
       status: "success",

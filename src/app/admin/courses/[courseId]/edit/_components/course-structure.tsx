@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useCallback, useMemo, useState } from "react";
+import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { CSS } from "@dnd-kit/utilities";
 import {
@@ -64,6 +64,27 @@ export function CourseStructure({ data }: { data: AdminCourseType }) {
 
   const [items, setItems] = useState(initialItems);
 
+  useEffect(() => {
+    setItems((prevItems) => {
+      const updatedItems =
+        data.chapters.map((chapter) => ({
+          id: chapter.id,
+          title: chapter.title,
+          order: chapter.position,
+          isOpen:
+            prevItems.find((item) => item.id === chapter.id)?.isOpen ?? true,
+          lessons: chapter.lessons.map((lesson) => ({
+            id: lesson.id,
+            title: lesson.title,
+            description: lesson.description,
+            order: lesson.position,
+          })),
+        })) || [];
+
+      return updatedItems;
+    });
+  }, [data]);
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -88,6 +109,7 @@ export function CourseStructure({ data }: { data: AdminCourseType }) {
         order: index + 1,
       }));
 
+      const previousItems = [...items];
       setItems(newItems);
 
       const reorderPromise = reorderChapters({
@@ -101,7 +123,10 @@ export function CourseStructure({ data }: { data: AdminCourseType }) {
       toast.promise(reorderPromise, {
         loading: "Reordering chapters...",
         success: (res) => res.message,
-        error: () => "Failed to reorder chapters",
+        error: () => {
+          setItems(previousItems);
+          return "Failed to reorder chapters";
+        },
       });
     } else if (activeType === "lesson" && overType === "lesson") {
       const activeChapterId = active.data.current?.chapterId;
@@ -123,8 +148,10 @@ export function CourseStructure({ data }: { data: AdminCourseType }) {
           return { ...chapter, lessons: newLessons };
         });
 
+        const previousItems = [...items];
         setItems(newItems);
         const reorderPromise = reorderLessons({
+          courseId: data.id,
           chapterId: activeChapterId,
           lessons:
             newItems
@@ -138,7 +165,10 @@ export function CourseStructure({ data }: { data: AdminCourseType }) {
         toast.promise(reorderPromise, {
           loading: "Reordering lessons...",
           success: (res) => res.message,
-          error: () => "Failed to reorder lessons",
+          error: () => {
+            setItems(previousItems);
+            return "Failed to reorder lessons";
+          },
         });
       }
     }

@@ -60,7 +60,6 @@ export function EditCourseForm({ data }: { data: AdminCourseType }) {
   });
 
   function onSubmit(values: CourseType) {
-    console.log(values);
     startTransition(async () => {
       const { data: response, error } = await tryCatch(
         editCourse(values, data.id)
