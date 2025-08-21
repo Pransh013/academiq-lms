@@ -33,6 +33,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { reorderChapters, reorderLessons } from "../actions";
+import { NewChapterModal } from "./new-chapter-modal";
 
 interface SortableItemProps {
   id: string;
@@ -210,110 +211,124 @@ export function CourseStructure({ data }: { data: AdminCourseType }) {
   }, []);
 
   return (
-    <DndContext
-      collisionDetection={rectIntersection}
-      onDragEnd={handleDragEnd}
-      sensors={sensors}
-    >
-      <SortableContext
-        items={items.map((item) => item.id)}
-        strategy={verticalListSortingStrategy}
-      >
-        {items.map((item) => (
-          <SortableItem key={item.id} id={item.id} data={{ type: "chapter" }}>
-            {(chapterListeners) => (
-              <Card>
-                <Collapsible
-                  open={item.isOpen}
-                  onOpenChange={() => toggleChapter(item.id)}
-                  className="flex flex-col gap-2"
-                >
-                  <CardHeader className="flex justify-between items-center">
-                    <div className="flex items-center gap-1 flex-1">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="cursor-grab opacity-60 hover:opacity-100"
-                        {...chapterListeners}
-                      >
-                        <GripVertical />
-                      </Button>
-                      <CollapsibleTrigger asChild>
+    <Card>
+      <CardHeader className="flex justify-between items-center">
+        <CardTitle className="text-xl">Chapters</CardTitle>
+        <NewChapterModal courseId={data.id} />
+      </CardHeader>
+      <CardContent className="grid gap-6">
+        <DndContext
+          collisionDetection={rectIntersection}
+          onDragEnd={handleDragEnd}
+          sensors={sensors}
+        >
+          <SortableContext
+            items={items.map((item) => item.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            {items.map((item) => (
+              <SortableItem
+                key={item.id}
+                id={item.id}
+                data={{ type: "chapter" }}
+              >
+                {(chapterListeners) => (
+                  <Card>
+                    <Collapsible
+                      open={item.isOpen}
+                      onOpenChange={() => toggleChapter(item.id)}
+                      className="flex flex-col gap-2"
+                    >
+                      <CardHeader className="flex justify-between items-center">
+                        <div className="flex items-center gap-1 flex-1">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="cursor-grab opacity-60 hover:opacity-100"
+                            {...chapterListeners}
+                          >
+                            <GripVertical />
+                          </Button>
+                          <CollapsibleTrigger asChild>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className={cn(
+                                "transition-transform duration-200",
+                                item.isOpen && "rotate-90"
+                              )}
+                            >
+                              <ChevronRight />
+                            </Button>
+                          </CollapsibleTrigger>
+                          <CardTitle className="cursor-pointer hover:text-primary transition-colors duration-200 text-lg">
+                            {`${item.order}- ${item.title}`}
+                          </CardTitle>
+                        </div>
                         <Button
                           size="icon"
-                          variant="ghost"
-                          className={cn(
-                            "transition-transform duration-200",
-                            item.isOpen && "rotate-90"
-                          )}
+                          className="bg-transparent hover:bg-destructive/30"
                         >
-                          <ChevronRight />
+                          <Trash2 className="opacity-80" />
                         </Button>
-                      </CollapsibleTrigger>
-                      <CardTitle className="cursor-pointer hover:text-primary transition-colors duration-200 text-lg">
-                        {`${item.order}- ${item.title}`}
-                      </CardTitle>
-                    </div>
-                    <Button
-                      size="icon"
-                      className="bg-transparent hover:bg-destructive/30"
-                    >
-                      <Trash2 className="opacity-80" />
-                    </Button>
-                  </CardHeader>
-                  <CollapsibleContent>
-                    <CardContent className="px-4 md:px-8 lg:px-16">
-                      <SortableContext
-                        items={item.lessons.map((lesson) => lesson.id)}
-                        strategy={verticalListSortingStrategy}
-                      >
-                        {item.lessons.map((lesson) => (
-                          <SortableItem
-                            key={lesson.id}
-                            id={lesson.id}
-                            data={{ type: "lesson", chapterId: item.id }}
+                      </CardHeader>
+                      <CollapsibleContent>
+                        <CardContent className="px-4 md:px-8 lg:px-16">
+                          <SortableContext
+                            items={item.lessons.map((lesson) => lesson.id)}
+                            strategy={verticalListSortingStrategy}
                           >
-                            {(lessonListeners) => (
-                              <div className="flex w-full justify-between items-center mb-2 px-4 py-1 rounded-md hover:bg-muted/40 ">
-                                <div className="flex items-center gap-1 flex-1">
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    className="cursor-grab opacity-60 hover:opacity-100"
-                                    {...lessonListeners}
-                                  >
-                                    <GripVertical />
-                                  </Button>
-                                  <CardTitle className="flex items-center gap-1 text-sm cursor-pointer">
-                                    <Link
-                                      href={`/admin/courses/${data.id}/${item.id}/${lesson.id}`}
+                            {item.lessons.map((lesson) => (
+                              <SortableItem
+                                key={lesson.id}
+                                id={lesson.id}
+                                data={{ type: "lesson", chapterId: item.id }}
+                              >
+                                {(lessonListeners) => (
+                                  <div className="flex w-full justify-between items-center mb-2 px-4 py-1 rounded-md hover:bg-muted/40 ">
+                                    <div className="flex items-center gap-1 flex-1">
+                                      <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        className="cursor-grab opacity-60 hover:opacity-100"
+                                        {...lessonListeners}
+                                      >
+                                        <GripVertical />
+                                      </Button>
+                                      <CardTitle className="flex items-center gap-1 text-sm cursor-pointer">
+                                        <Link
+                                          href={`/admin/courses/${data.id}/${item.id}/${lesson.id}`}
+                                        >
+                                          {`${item.order}.${lesson.order}- ${lesson.title}`}
+                                        </Link>
+                                      </CardTitle>
+                                    </div>
+                                    <Button
+                                      size="icon"
+                                      className="bg-transparent hover:bg-destructive/30"
                                     >
-                                      {`${item.order}.${lesson.order}- ${lesson.title}`}
-                                    </Link>
-                                  </CardTitle>
-                                </div>
-                                <Button
-                                  size="icon"
-                                  className="bg-transparent hover:bg-destructive/30"
-                                >
-                                  <Trash2 className="opacity-80" />
-                                </Button>
-                              </div>
-                            )}
-                          </SortableItem>
-                        ))}
-                      </SortableContext>
-                      <Button className="w-full" variant="outline">
-                        Create New Lesson
-                      </Button>
-                    </CardContent>
-                  </CollapsibleContent>
-                </Collapsible>
-              </Card>
-            )}
-          </SortableItem>
-        ))}
-      </SortableContext>
-    </DndContext>
+                                      <Trash2 className="opacity-80" />
+                                    </Button>
+                                  </div>
+                                )}
+                              </SortableItem>
+                            ))}
+                          </SortableContext>
+                          <div className="w-5/6 mx-auto">
+                            <Button className="w-full" variant="outline">
+                              Create New Lesson
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </Card>
+                )}
+              </SortableItem>
+            ))}
+          </SortableContext>
+        </DndContext>
+      </CardContent>
+    </Card>
   );
 }

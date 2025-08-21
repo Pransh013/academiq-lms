@@ -53,17 +53,7 @@ export default async function EditCoursePage({
           </Card>
         </TabsContent>
         <TabsContent value="course-structure">
-          <Card>
-            <CardHeader>
-              <CardTitle>Course Structure</CardTitle>
-              <CardDescription>
-                Manage the course chapters and lessons.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-6">
-              <CourseStructure data={course} />
-            </CardContent>
-          </Card>
+          <CourseStructure data={course} />
         </TabsContent>
       </Tabs>
     </>

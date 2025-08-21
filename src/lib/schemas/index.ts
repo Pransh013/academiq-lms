@@ -94,3 +94,8 @@ export const reorderLessonSchema = z.object({
     })
   ),
 });
+
+export const createChapterSchema = z.object({
+  name: z.string().min(3, "Name must be atleast 3 characters"),
+  courseId: z.string().cuid({ message: "Invalid course id" }),
+});

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   courseSchema,
+  createChapterSchema,
   reorderChapterSchema,
   reorderLessonSchema,
 } from "../schemas";
@@ -16,6 +17,8 @@ export type CourseType = z.infer<typeof courseSchema>;
 export type ReorderChapterType = z.infer<typeof reorderChapterSchema>;
 
 export type ReorderLessonType = z.infer<typeof reorderLessonSchema>;
+
+export type CreateChapterType = z.infer<typeof createChapterSchema>;
 
 export type ActionResponse<T> = {
   status: "success" | "error";

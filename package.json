@@ -10,7 +10,7 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
-    "add-shadcn": "pnpm dlx shadcn@latest add",
+    "shadcn": "pnpm dlx shadcn@latest add",
     "postinstall": "prisma generate"
   },
   "dependencies": {
